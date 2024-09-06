@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, date
 import time
 from typing import Any, Dict, List, Union, Literal
 import logging 
-
+from .errors import handle_response
 """
 Implementation of the Lexoffice API functions
 
@@ -50,34 +50,31 @@ class Lexoffice:
         
         while retries <= self.max_retries:
             response = requests.request(method, url, headers=self.headers, params=params)
-            if response.ok:
-                try:
-                    return response.json()
-                except ValueError:
-                    pass
-                #     raise Error(f"Failed to parse response as json: {response.text}")
-            elif response.status_code == 429:
+
+            if response.status_code == 429:
                 # A client can make up to 2 requests per second to the lexoffice API.
                 # Recommended: Use the token bucket algorithm on your side. 
                 # Librarys for all major programming languages exist.
 
-                # Enforcing the mentioned limits without any buffer will commonly result in rate limited requests.
+
+
+
+
+
+
+                time.wait(60)
                 retries += 1
                 logging.warning(f"Rate limit exceeded. Retrying in {self.default_retry_wait} seconds...")
                 time.sleep(self.default_retry_wait)            
             else:
-                # raise LexofficeApiError.from_response(response)
-                pass
+                return handle_response(response)
     
-
-
-        # :param page: Page number for paginated ressources. Pages are zero indexed.
-        # :param size: Page size for paginated ressources. Default page size is 25 but can be increased up to 100/250 (depends on the used endpoint).
     def _paginated_requests(self,
                             path:str,
                             params: dict = None,
-                            id: str = None,
                             method = 'GET') -> List[Dict[str, Any]]:
+        if params is None:
+            params = {}
         # add page=0 to the initial request
         params['page'] = 0
         # set page size to maximum (250)
@@ -160,13 +157,12 @@ class Lexoffice:
         :param voucherNumber:       The voucher's voucher number
         """
         
-
         # parse voucher types and vouchter stati into comma seperated list
+        if voucher_type != 'any':
+            voucher_type = ', '.join(voucher_type)
+        if voucher_status != 'any':
+            voucher_status = ', '.join(voucher_status)
 
-
-
-
-        # ---
         params = {
             'voucherType': voucher_type,
             'voucherStatus': voucher_status,
@@ -185,7 +181,7 @@ class Lexoffice:
         return voucherlist
   
     
-    def get_articles(self, id) -> List[Dict[str, Any]]:
+    def get_articles(self) -> List[Dict[str, Any]]:
         """
         GET Articles
         The articles endpoint provides read and write access to articles in lexoffice. 
@@ -193,5 +189,21 @@ class Lexoffice:
 
         https://developers.lexoffice.io/docs/?shell#articles-endpoint
         """
-        articles = self._request('/v1/articles/', id=id)
+        articles = self._paginated_requests('/v1/articles/')
         return articles
+    
+    def get_contacts(self) -> List[Dict[str, Any]]:
+        """
+        GET Contacts
+        This endpoint provides read access to contacts (e.g. customers, vendors). 
+        A contact can hold addresses, contact information (e.g. phone numbers, email addresses) 
+        and contact persons for company related contacts.
+
+        https://developers.lexoffice.io/docs/?shell#contacts-endpoint-purpose        
+        """
+
+        contacts = self._paginated_requests('/v1/contacts/')
+        return contacts
+
+
+    
