@@ -58,11 +58,6 @@ class Lexoffice:
 
 
 
-
-
-
-
-                time.wait(60)
                 retries += 1
                 logging.warning(f"Rate limit exceeded. Retrying in {self.default_retry_wait} seconds...")
                 time.sleep(self.default_retry_wait)            
@@ -90,14 +85,13 @@ class Lexoffice:
         num_of_current_page = initial_request['number']
         num_of_total_elements = initial_request['totalElements']
         logging.info(f'Number of total elements: {num_of_total_elements}')
-        print(num_of_total_pages)
+        logging.info(f'Number of total pages: {num_of_total_pages}')
         while num_of_current_page < num_of_total_pages - 1:
             params['page'] += 1
             next_page_request = self._request(path, params)
             results.extend(next_page_request['content'])
             num_of_current_page = next_page_request['number']
-            logging.info(num_of_current_page)
-            print(num_of_current_page)
+            logging.info(f'Current page: {num_of_current_page}')
         return results
         
     allowed_voucher_types = Literal['salesinvoice', 'salescreditnote', 'purchaseinvoice', 'purchasecreditnote', 'invoice', 'creditnote', 'orderconfirmation', 'quotation', 'downpaymentinvoice', 'deliverynote']
@@ -214,10 +208,25 @@ class Lexoffice:
 
         https://developers.lexoffice.io/docs/?shell#contacts-endpoint-purpose        
         """
+        logging.info(f'Total number of invoices: {len(list_of_invoice_ids)}')
         all_invoices = []
-        for invoice_id in list_of_invoice_ids:
+        for invoice_index, invoice_id in enumerate(list_of_invoice_ids):
             invoice = self._request(f'v1/invoices/{invoice_id}')
+            logging.info(f'invoice number: {invoice_index}')
             all_invoices.append(invoice)
         return all_invoices
     
-    get_
+    def get_detailed_invoices(self):
+        """
+        GET all (detailed) invoices including line items
+        Detailed invoices can only be accessed by requesting each invoice id individually from the invoices endpoint. 
+        This makes it necessary to first get all available invoice ids from the voucherlist endpoint.
+        """
+        # get list of all invoices from voucherlist endpoint
+        invoices = self.get_voucherlist(voucher_type=['invoice'], voucher_status='any')
+        invoice_ids = [invoice['id'] for invoice in invoices]
+
+        # make requests for all ids
+        detailed_invoices = self.get_invoices(invoice_ids)
+        return detailed_invoices
+
