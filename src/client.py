@@ -6,6 +6,7 @@ import time
 from typing import Any, Dict, List, Union, Literal
 import logging 
 from .errors import handle_response
+from .custom_types import allowed_voucher_status, allowed_voucher_types
 """
 Implementation of the Lexoffice API functions
 
@@ -94,9 +95,6 @@ class Lexoffice:
             logging.info(f'Current page: {num_of_current_page}')
         return results
         
-    allowed_voucher_types = Literal['salesinvoice', 'salescreditnote', 'purchaseinvoice', 'purchasecreditnote', 'invoice', 'creditnote', 'orderconfirmation', 'quotation', 'downpaymentinvoice', 'deliverynote']
-    allowed_voucher_status = Literal['open', 'draft', 'overdue', 'paid', 'paidoff', 'voided', 'transferred',
-                'sepadebit', 'accepted', 'rejected', 'unchecked']
     def get_voucherlist(
             self, 
             voucher_type: Union[Literal['any'], List[allowed_voucher_types]], 
