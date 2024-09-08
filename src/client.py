@@ -205,5 +205,19 @@ class Lexoffice:
         contacts = self._paginated_requests('/v1/contacts/')
         return contacts
 
+    def get_invoices(self, list_of_invoice_ids):
+        # https://api.lexoffice.io/v1/invoices/e9066f04-8cc7-4616-93f8-ac9ecc8479c8
 
+        """
+        GET invoices
+        This endpoint provides read and write access to invoices.
+
+        https://developers.lexoffice.io/docs/?shell#contacts-endpoint-purpose        
+        """
+        all_invoices = []
+        for invoice_id in list_of_invoice_ids:
+            invoice = self._request(f'v1/invoices/{invoice_id}')
+            all_invoices.append(invoice)
+        return all_invoices
     
+    get_
