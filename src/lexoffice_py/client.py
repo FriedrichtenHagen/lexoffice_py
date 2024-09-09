@@ -17,7 +17,7 @@ class Lexoffice:
     def __init__(self, 
                  client_secret:str,
                  max_retries:int = 3,
-                 default_retry_wait = 60) -> None:
+                 default_retry_wait = 1) -> None:
         
         self.BASE_URL = "https://api.lexoffice.io"
         self.client_secret = client_secret or os.getenv('CLIENT_SECRET')
@@ -51,20 +51,14 @@ class Lexoffice:
         
         while retries <= self.max_retries:
             response = requests.request(method, url, headers=self.headers, params=params)
-
+            time.sleep(0.5)
             if response.status_code == 429:
-                # A client can make up to 2 requests per second to the lexoffice API.
-                # Recommended: Use the token bucket algorithm on your side. 
-                # Librarys for all major programming languages exist.
-
-
-
                 retries += 1
                 logging.warning(f"Rate limit exceeded. Retrying in {self.default_retry_wait} seconds...")
                 time.sleep(self.default_retry_wait)            
             else:
                 return handle_response(response)
-    
+
     def _paginated_requests(self,
                             path:str,
                             params: dict = None,
