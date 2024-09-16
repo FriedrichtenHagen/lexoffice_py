@@ -18,6 +18,13 @@ class Lexoffice:
                  client_secret:str,
                  max_retries:int = 3,
                  default_retry_wait = 1) -> None:
+        """
+        Initialize Lexoffice class instance.
+
+        :param client_secret: Lexoffice API key
+        :param max_retries: Max. number of request retries
+        :param default_retry_wait: Number of seconds to wait before retry
+        """
         
         self.BASE_URL = "https://api.lexoffice.io"
         self.client_secret = client_secret or os.getenv('CLIENT_SECRET')
@@ -36,15 +43,15 @@ class Lexoffice:
                  method = 'GET',
                  ) -> List[Dict[str, Any]]:
         """
-            Make a request against the Lexoffice API.
-            Returns the HTTP response, which might be successful or not.
+        Make a request against the Lexoffice API.
+        Returns the HTTP response, which might be successful or not.
 
-            :param path: the URL path for this request (relative to the Lexoffice API base URL)
-            :param params: dictionary of URL parameters (optional)
-            :param id: id of object
-            :param method: the HTTP request method (default: GET)
-            :return: the parsed json response, when the request was successful, or a LexofficeApiError
-            """
+        :param path: the URL path for this request (relative to the Lexoffice API base URL)
+        :param params: dictionary of URL parameters (optional)
+        :param id: id of object
+        :param method: the HTTP request method (default: GET)
+        :return: the parsed json response, when the request was successful, or a LexofficeApiError
+        """
         # make the request
         url = urljoin(self.BASE_URL, path)
         retries = 0
@@ -105,7 +112,7 @@ class Lexoffice:
         ):
         # https://api.lexoffice.io/v1/voucherlist?voucherType=invoice&voucherStatus=open,paid,paidoff,voided,transferred
         """
-        Retrieve and Filter Voucherlist
+        Retrieve and Filter Voucherlist.
         Vouchers can be filtered by various attributes, such as voucherType, voucherStatus, the archived flag, various relevant dates, and the voucher number.
         docs: https://developers.lexoffice.io/docs/?shell#voucherlist-endpoint-voucherlist-properties
 
@@ -222,9 +229,21 @@ class Lexoffice:
             voucher_number: str = None,
         ):
         """
-        GET all (detailed) invoices including line items
+        GET all (detailed) invoices including line items.
         Detailed invoices can only be accessed by requesting each invoice id individually from the invoices endpoint. 
         This makes it necessary to first get all available invoice ids from the voucherlist endpoint.
+
+        :param voucher_type: A comma-separated list of voucher types to be returned, or the value "any".
+        :param voucher_status: A comma-separated list of voucher status, or the value "any". Some status only apply to specific voucher types. 
+        :param archived:            If the voucher is marked as archived or not.
+        :param contact_id:          The id of an existing lexoffice contact.
+        :param voucher_date_from:   The date of the voucher in format yyyy-MM-dd(e.g. 2023-06-01). References a full day in CET/CEST 0:00-23:59:59
+        :param voucher_date_to:     The date of the voucher in format yyyy-MM-dd(e.g. 2023-06-30). References a full day in CET/CEST 0:00-23:59:59
+        :param created_date_from:   The date the voucher was created in format yyyy-MM-dd(e.g. 2023-06-01). References a full day in CET/CEST 0:00-23:59:59
+        :param createdDateTo:       The date the voucher was created in format yyyy-MM-dd(e.g. 2023-06-30). References a full day in CET/CEST 0:00-23:59:59
+        :param updated_date_from:   The date the voucher was lastly modified in format yyyy-MM-dd(e.g. 2023-06-01). References a full day in CET/CEST 0:00-23:59:59
+        :param updated_date_to:     The date the voucher was lastly modified in format yyyy-MM-dd(e.g. 2023-06-30). References a full day in CET/CEST 0:00-23:59:59
+        :param voucherNumber:       The voucher's voucher number
 
         """
         # get list of all invoices from voucherlist endpoint
