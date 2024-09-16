@@ -208,14 +208,40 @@ class Lexoffice:
             all_invoices.append(invoice)
         return all_invoices
     
-    def get_detailed_invoices(self):
+    def get_detailed_invoices(
+            self,
+            voucher_status: Union[Literal['any'], List[allowed_voucher_status]],
+            archived: bool = None,
+            contact_id: str = None,
+            voucher_date_from: str = None,
+            voucher_date_to: str = None,
+            created_date_from: str = None,
+            created_date_to: str = None,
+            updated_date_from: str = None,
+            updated_date_to: str = None, 
+            voucher_number: str = None,
+        ):
         """
         GET all (detailed) invoices including line items
         Detailed invoices can only be accessed by requesting each invoice id individually from the invoices endpoint. 
         This makes it necessary to first get all available invoice ids from the voucherlist endpoint.
+
         """
         # get list of all invoices from voucherlist endpoint
-        invoices = self.get_voucherlist(voucher_type=['invoice'], voucher_status='any')
+        # type is fixed to invoice since only the invoices are relevant to the later invoice endpoint call
+        invoices = self.get_voucherlist(
+            voucher_status,
+            archived,
+            contact_id,
+            voucher_date_from,
+            voucher_date_to,
+            created_date_from,
+            created_date_to,
+            updated_date_from,
+            updated_date_to,
+            voucher_number,
+            voucher_type=['invoice']
+        )
         invoice_ids = [invoice['id'] for invoice in invoices]
 
         # make requests for all ids
