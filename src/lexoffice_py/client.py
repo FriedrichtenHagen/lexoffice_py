@@ -98,8 +98,8 @@ class Lexoffice:
         
     def get_voucherlist(
             self, 
-            voucher_type: Union[Literal['any'], List[allowed_voucher_types]], 
-            voucher_status: Union[Literal['any'], List[allowed_voucher_status]],
+            voucher_type: Union[Literal['any'], List[allowed_voucher_types]] = 'any', 
+            voucher_status: Union[Literal['any'], List[allowed_voucher_status]] = 'any',
             archived: bool = None,
             contact_id: str = None,
             voucher_date_from: str = None,
@@ -198,7 +198,7 @@ class Lexoffice:
         contacts = self._paginated_requests('/v1/contacts/')
         return contacts
 
-    def get_invoices(self, list_of_invoice_ids):
+    def get_invoices(self, list_of_invoice_ids) -> List[Dict[str, Any]]:
         # https://api.lexoffice.io/v1/invoices/e9066f04-8cc7-4616-93f8-ac9ecc8479c8
 
         """
@@ -217,7 +217,7 @@ class Lexoffice:
     
     def get_detailed_invoices(
             self,
-            voucher_status: Union[Literal['any'], List[allowed_voucher_status]],
+            voucher_status: Union[Literal['any'], List[allowed_voucher_status]] = 'any',
             archived: bool = None,
             contact_id: str = None,
             voucher_date_from: str = None,
@@ -227,7 +227,7 @@ class Lexoffice:
             updated_date_from: str = None,
             updated_date_to: str = None, 
             voucher_number: str = None,
-        ):
+        ) -> List[Dict[str, Any]]:
         """
         GET all (detailed) invoices including line items.
         Detailed invoices can only be accessed by requesting each invoice id individually from the invoices endpoint. 
