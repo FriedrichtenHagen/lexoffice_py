@@ -3,3 +3,6 @@ testing.py
 test_csvs/
 myenv/
 pyproject.toml
+.DS_Store
+dist/
+src/lexoffice_py.egg-info/
