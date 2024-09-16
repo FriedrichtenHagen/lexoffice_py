@@ -249,16 +249,16 @@ class Lexoffice:
         # get list of all invoices from voucherlist endpoint
         # type is fixed to invoice since only the invoices are relevant to the later invoice endpoint call
         invoices = self.get_voucherlist(
-            voucher_status,
-            archived,
-            contact_id,
-            voucher_date_from,
-            voucher_date_to,
-            created_date_from,
-            created_date_to,
-            updated_date_from,
-            updated_date_to,
-            voucher_number,
+            voucher_status=voucher_status,
+            archived=archived,
+            contact_id=contact_id,
+            voucher_date_from=voucher_date_from,
+            voucher_date_to=voucher_date_to,
+            created_date_from=created_date_from,
+            created_date_to=created_date_to,
+            updated_date_from=updated_date_from,
+            updated_date_to=updated_date_to,
+            voucher_number=voucher_number,
             voucher_type=['invoice']
         )
         invoice_ids = [invoice['id'] for invoice in invoices]
