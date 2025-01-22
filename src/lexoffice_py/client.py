@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Union, Literal
 import logging 
 from .errors import handle_response
 from .custom_types import allowed_voucher_status, allowed_voucher_types
-from lexoffice_py.errors import (TooManyRequestsError)
+from lexoffice_py.errors import (TooManyRequestsError, ClientNotAuthorizedError)
 """
 Implementation of the Lexoffice API functions
 
@@ -28,7 +28,10 @@ class Lexoffice:
         """
         
         self.BASE_URL = "https://api.lexoffice.io"
-        self.client_secret = client_secret or os.getenv('CLIENT_SECRET')
+        self.client_secret = client_secret or os.getenv('CLIENT_SECRET') or None
+        # raise error is client secret is not available
+        if self.client_secret == None:
+            raise ClientNotAuthorizedError
         
         self.headers = {
             "Authorization": f"Bearer {self.client_secret}",

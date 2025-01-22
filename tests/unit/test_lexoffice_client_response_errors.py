@@ -8,7 +8,6 @@ from lexoffice_py.errors import (
     LexofficeAPIError
 )
 
-import time
 from unittest.mock import patch
 
 # Fixture for the Lexoffice client
