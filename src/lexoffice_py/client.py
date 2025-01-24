@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Union, Literal
 import logging 
 from .errors import handle_response
 from .custom_types import allowed_voucher_status, allowed_voucher_types
+from lexoffice_py.errors import (MaxRetriesError, ClientNotAuthorizedError)
 """
 Implementation of the Lexoffice API functions
 
@@ -27,7 +28,10 @@ class Lexoffice:
         """
         
         self.BASE_URL = "https://api.lexoffice.io"
-        self.client_secret = client_secret or os.getenv('CLIENT_SECRET')
+        self.client_secret = client_secret or os.getenv('CLIENT_SECRET') or None
+        # raise error is client secret is not available
+        if self.client_secret == None:
+            raise ClientNotAuthorizedError
         
         self.headers = {
             "Authorization": f"Bearer {self.client_secret}",
@@ -56,15 +60,16 @@ class Lexoffice:
         url = urljoin(self.BASE_URL, path)
         retries = 0
         
-        while retries <= self.max_retries:
+        while retries < self.max_retries:
             response = requests.request(method, url, headers=self.headers, params=params)
             time.sleep(0.5)
             if response.status_code == 429:
                 retries += 1
-                logging.warning(f"Rate limit exceeded. Retrying in {self.default_retry_wait} seconds...")
+                logging.warning(f"Rate limit exceeded. Try number {retries}. Retrying in {self.default_retry_wait} seconds...")
                 time.sleep(self.default_retry_wait)            
             else:
                 return handle_response(response)
+        raise MaxRetriesError()
 
     def _paginated_requests(self,
                             path:str,
