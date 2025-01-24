@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Union, Literal
 import logging 
 from .errors import handle_response
 from .custom_types import allowed_voucher_status, allowed_voucher_types
-from lexoffice_py.errors import (TooManyRequestsError, ClientNotAuthorizedError)
+from lexoffice_py.errors import (MaxRetriesError, ClientNotAuthorizedError)
 """
 Implementation of the Lexoffice API functions
 
@@ -69,7 +69,7 @@ class Lexoffice:
                 time.sleep(self.default_retry_wait)            
             else:
                 return handle_response(response)
-        raise TooManyRequestsError()
+        raise MaxRetriesError()
 
     def _paginated_requests(self,
                             path:str,

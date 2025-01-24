@@ -4,6 +4,10 @@ class LexofficeAPIError(Exception):
         self.message = message
         super().__init__(self.message)
 
+class MaxRetriesError(LexofficeAPIError):
+    def __init__(self):
+        super().__init__("The maximum numbers of retries have been used.")
+
 class ClientNotAuthorizedError(LexofficeAPIError):
     def __init__(self):
         super().__init__("Please supply a secret via argument of environment variable.")

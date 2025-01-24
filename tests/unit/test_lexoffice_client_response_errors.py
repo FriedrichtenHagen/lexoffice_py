@@ -5,9 +5,9 @@ from lexoffice_py.errors import (
     BadRequestError, UnauthorizedError, PaymentRequiredError, ForbiddenError, NotFoundError,
     MethodNotAllowedError, NotAcceptableError, ConflictError, UnsupportedMediaTypeError,
     TooManyRequestsError, ServerError, NotImplementedError, ServiceUnavailableError, GatewayTimeoutError,
-    LexofficeAPIError
+    LexofficeAPIError, MaxRetriesError
 )
-
+from unittest.mock import patch, MagicMock
 from unittest.mock import patch
 
 # Fixture for the Lexoffice client
@@ -32,7 +32,7 @@ def add_mock_response(method, url, status, json=None):
         (406, NotAcceptableError),
         (409, ConflictError),
         (415, UnsupportedMediaTypeError),
-        (429, TooManyRequestsError),  # Note: Handled in client logic as per the comment in the function
+        (429, MaxRetriesError),  # Note: Handled in client logic as per the comment in the function
         (500, ServerError),
         (501, NotImplementedError),
         (503, ServiceUnavailableError),
@@ -75,5 +75,88 @@ def test_handle_response_429_too_many_requests(mock_sleep, client):
         )
 
     # Test that the client retries and eventually raises TooManyRequestsError
-    with pytest.raises(TooManyRequestsError):
+    with pytest.raises(MaxRetriesError):
         client._request(path="test_path")
+
+@responses.activate
+def test_request_success():
+    # Mock API response
+    add_mock_response(
+        method=responses.GET,
+        url="https://api.lexoffice.io/test-path",
+        status=200,
+        json={"success": True, "data": "test_data"},
+    )
+
+    # Initialize Lexoffice client
+    client = Lexoffice(client_secret="test_secret")
+
+    # Call the private `_request` method
+    response = client._request(method="GET", path="/test-path")
+
+    # Assertions
+    assert response == {"success": True, "data": "test_data"}
+    assert len(responses.calls) == 1
+    assert responses.calls[0].request.headers["Authorization"] == "Bearer test_secret"
+    assert responses.calls[0].request.url == "https://api.lexoffice.io/test-path"
+
+@responses.activate
+def test_request_unauthorized():
+    # Mock a 401 Unauthorized response
+    add_mock_response(
+        method=responses.GET,
+        url="https://api.lexoffice.io/test-path",
+        status=401,
+        json={"error": "Unauthorized"},
+    )
+
+    # Initialize Lexoffice client
+    client = Lexoffice(client_secret="test_secret")
+
+    # Call the private `_request` method and expect an exception
+    with pytest.raises(UnauthorizedError) as exc_info:
+        client._request(method="GET", path="/test-path")
+    
+    # Assertions
+    assert "Unauthorized" in str(exc_info.value)
+    assert len(responses.calls) == 1
+    assert responses.calls[0].response.status_code == 401
+
+@responses.activate
+def test_request_server_error():
+    # Mock a 500 Internal Server Error response
+    add_mock_response(
+        method=responses.GET,
+        url="https://api.lexoffice.io/test-path",
+        status=500,
+        json={"error": "Internal server error"},
+    )
+
+    # Initialize Lexoffice client
+    client = Lexoffice(client_secret="test_secret")
+
+    # Call the private `_request` method and expect a custom exception
+    with pytest.raises(ServerError) as exc_info:
+        client._request(method="GET", path="/test-path")
+    
+    # Assertions
+    assert "Internal server error" in str(exc_info.value)
+    assert len(responses.calls) == 1
+    assert responses.calls[0].response.status_code == 500
+
+@responses.activate
+def test_request_timeout():
+    # Mock a timeout exception
+    responses.add(
+        method=responses.GET,
+        url="https://api.lexoffice.io/test-path",
+        status=504,
+    )
+
+    client = Lexoffice(client_secret="test_secret")
+
+    # Call the private `_request` method and expect a timeout exception
+    with pytest.raises(GatewayTimeoutError) as exc_info:
+        client._request(method="GET", path="/test-path")
+    
+    assert len(responses.calls) == 1
