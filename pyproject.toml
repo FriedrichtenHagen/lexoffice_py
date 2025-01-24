@@ -1,6 +1,6 @@
 [project]
 name = "lexoffice_py"
-version = "0.0.5"
+version = "0.0.6"
 authors = [
   { name="Friedrich ten Hagen", email="author@example.com" },
 ]
