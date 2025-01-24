@@ -19,6 +19,10 @@ dependencies = [
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 
+[tool.poetry.dev-dependencies]
+flake8 = "^4.0"
+black = "^23.0"
+
 [project.optional-dependencies]
 test = ["pytest", "pytest-mock", "responses"]
 
