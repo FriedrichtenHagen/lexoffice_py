@@ -274,3 +274,18 @@ class Lexoffice:
         # make requests for all ids
         detailed_invoices = self.get_invoices(invoice_ids)
         return detailed_invoices
+
+    def get_profile(
+            self
+    ) -> List[Dict[str, Any]]:
+        """
+        GET Profile
+        The profile endpoint provides read access to basic profile information such as company name, user id, name and email
+        of the connected lexoffice account.
+
+        https://developers.lexoffice.io/docs/#profile-endpoint
+        """
+        profile = self._request("/v1/profile")
+        return profile
+    
+
